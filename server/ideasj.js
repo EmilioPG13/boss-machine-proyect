@@ -1,4 +1,5 @@
 const { validateIdeas } = require('./validation');
+const checkMillionDollarIdea = require('./checkMillionDollarIdea');
 
 const express = require('express');
 const ideasRouter = express.Router();
@@ -11,7 +12,7 @@ ideasRouter.get('/', (req, res) => {
 });
 
 // POST /api/ideas to create a new idea and save it to the database.
-ideasRouter.post('/', (req, res) => {
+ideasRouter.post('/', checkMillionDollarIdea, (req, res) => {
     const error = validateIdeas(req.body);
     if (error) {
         return res.status(400).send(error);
@@ -25,7 +26,7 @@ ideasRouter.post('/', (req, res) => {
 });
 
 // PUT /api/ideas/:ideaId to put a single idea by id.
-ideasRouter.put('/:ideaId', (req, res) => {
+ideasRouter.put('/:ideaId', checkMillionDollarIdea, (req, res) => {
     const ideaId = req.params.ideaId;
     const existingIdea = getFromDatabaseById('ideas', ideaId);
     if (existingIdea) {
