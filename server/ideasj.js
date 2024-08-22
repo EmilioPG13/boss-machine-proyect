@@ -1,8 +1,10 @@
-express = require('express');
+const { validateIdeas } = require('./validation');
+
+const express = require('express');
 const ideasRouter = express.Router();
 const { getAllFromDatabase, getFromDatabaseById, addToDatabase, updateInstanceInDatabase, deleteFromDatabasebyId } = require('./db');
 
-//GET /api/ideas to get an array of all ideas.
+// GET /api/ideas to get an array of all ideas.
 ideasRouter.get('/', (req, res) => {
     const ideas = getAllFromDatabase('ideas');
     res.send(ideas);
@@ -10,6 +12,10 @@ ideasRouter.get('/', (req, res) => {
 
 // POST /api/ideas to create a new idea and save it to the database.
 ideasRouter.post('/', (req, res) => {
+    const error = validateIdeas(req.body);
+    if (error) {
+        return res.status(400).send(error);
+    }
     try {
         const newIdea = addToDatabase('ideas', req.body);
         res.status(201).send(newIdea);
@@ -18,13 +24,17 @@ ideasRouter.post('/', (req, res) => {
     }
 });
 
-// GET /api/ideas/:ideaId to get a single idea by id.
+// PUT /api/ideas/:ideaId to put a single idea by id.
 ideasRouter.put('/:ideaId', (req, res) => {
     const ideaId = req.params.ideaId;
     const existingIdea = getFromDatabaseById('ideas', ideaId);
     if (existingIdea) {
+        const error = validateIdeas(req.body);
+        if (error) {
+            return res.status(400).send(error);
+        }
         try {
-            const updatedIdea = updateInstanceInDatabase('ideas', { ...req.body, id: ideaId});
+            const updatedIdea = updateInstanceInDatabase('ideas', { ...req.body, id: ideaId });
             res.send(updatedIdea);
         } catch (error) {
             res.status(400).send(error.message);
@@ -34,7 +44,7 @@ ideasRouter.put('/:ideaId', (req, res) => {
     }
 });
 
-// Delete /api/ideas/:ideaId to delete a single idea by id
+// DELETE /api/ideas/:ideaId to delete a single idea by id.
 ideasRouter.delete('/:ideaId', (req, res) => {
     const deleted = deleteFromDatabasebyId('ideas', req.params.ideaId);
     if (deleted) {
